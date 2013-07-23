@@ -1,0 +1,4 @@
+name: Wat
+main: se.jkrau.wat.Plugin
+version: ${project.version}
+description: For Corrupted Helixes and Dabo
