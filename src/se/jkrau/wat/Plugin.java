@@ -3,6 +3,7 @@ package se.jkrau.wat;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -21,17 +22,17 @@ public class Plugin extends JavaPlugin implements Listener {
 	}
 	
 	// This is necessary to calculate higher bounciness.
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onFallDamage(EntityDamageEvent e) {
 		if (e.getCause() == DamageCause.FALL && e.getEntity() instanceof Player) {
 			Player pl = (Player) e.getEntity();
 			if (pl.getLocation().getY() > 80) {
 				if (pl.getLocation().getBlock().getRelative(BlockFace.DOWN).getTypeId() == 80) {
-					if (!pl.getLocation().getBlock().getRelative(BlockFace.DOWN).hasMetadata("wat_playerPlaced")) {
+					if (!pl.isSneaking() && pl.getLocation().getBlock().getRelative(BlockFace.DOWN).hasMetadata("wat_playerPlaced")) {
 						pl.setVelocity(new Vector(0, e.getDamage() * 2, 0));
-						e.setDamage(0); // Incase plugins unset the cancel value (stupid developers check).
-						e.setCancelled(true);
 					}
+					e.setDamage(0); // Incase plugins unset the cancel value (stupid developers check).
+					e.setCancelled(true);
 				}
 			}
 		}
@@ -48,7 +49,8 @@ public class Plugin extends JavaPlugin implements Listener {
 	// Move!
 	@EventHandler
 	public void onMove(PlayerMoveEvent e) {
-		if (e.getTo().getX() < e.getFrom().getY() && e.getTo().getBlock().getRelative(BlockFace.DOWN).getTypeId() == 80) {
+		if (e.getPlayer().isSneaking()) return;
+		if (e.getTo().getX() < e.getFrom().getY() && (e.getFrom().getY() - e.getTo().getX()) >= 1.3D && e.getTo().getBlock().getRelative(BlockFace.DOWN).getTypeId() == 80) {
 			if (!e.getTo().getBlock().getRelative(BlockFace.DOWN).hasMetadata("wat_playerPlaced")) {
 				e.getPlayer().setVelocity(new Vector(0, 2, 0));
 			}
